@@ -1,0 +1,14 @@
+{
+	"required": true,
+	"package": "mod.kinderhead.tellrawlogger.mixin",
+	"compatibilityLevel": "JAVA_21",
+	"mixins": [
+		"TellRawMixin"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	},
+	"overwrites": {
+		"requireAnnotations": true
+	}
+}
