@@ -20,7 +20,7 @@ public class TellRawMixin {
 	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
 		dispatcher.register(
 			CommandManager.literal("tellraw")
-				.requires(CommandManager.requirePermissionLevel(2))
+				.requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
 				.then(
 					CommandManager.argument("targets", EntityArgumentType.players())
 						.then(CommandManager.argument("message", TextArgumentType.text(registryAccess)).executes(context -> {
