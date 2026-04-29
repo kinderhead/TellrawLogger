@@ -1,40 +1,40 @@
 package mod.kinderhead.tellrawlogger.mixin;
 
+import org.jspecify.annotations.NonNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 
 import com.mojang.brigadier.CommandDispatcher;
 
 import mod.kinderhead.tellrawlogger.TellrawLogger;
-import net.minecraft.command.CommandRegistryAccess;
-import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.argument.TextArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.command.TellRawCommand;
-import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.commands.CommandBuildContext;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.commands.arguments.ComponentArgument;
+import net.minecraft.commands.arguments.EntityArgument;
+import net.minecraft.server.commands.TellRawCommand;
+import net.minecraft.server.level.ServerPlayer;
 
 @Mixin(TellRawCommand.class)
 public class TellRawMixin {
 	@Overwrite
-	public static void register(CommandDispatcher<ServerCommandSource> dispatcher, CommandRegistryAccess registryAccess) {
+	public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext context) {
 		dispatcher.register(
-			CommandManager.literal("tellraw")
-				.requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+			Commands.literal("tellraw")
+				.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
 				.then(
-					CommandManager.argument("targets", EntityArgumentType.players())
-						.then(CommandManager.argument("message", TextArgumentType.text(registryAccess)).executes(context -> {
-							TellrawLogger.LOGGER.info(TextArgumentType.parseTextArgument(context,
-													"message", null).getString());
+					Commands.argument("targets", EntityArgument.players())
+						.then(Commands.argument("message", ComponentArgument.textComponent(context)).executes(c -> {
+							TellrawLogger.LOGGER.info(ComponentArgument.getResolvedComponent(c, "message").getString());
 
-							int i = 0;
+							int result = 0;
 
-							for (ServerPlayerEntity serverPlayerEntity : EntityArgumentType.getPlayers(context, "targets")) {
-								serverPlayerEntity.sendMessageToClient(TextArgumentType.parseTextArgument(context, "message", serverPlayerEntity), false);
-								i++;
+							for (ServerPlayer player : EntityArgument.getPlayers(c, "targets")) {
+								player.sendSystemMessage(ComponentArgument.getResolvedComponent(c, "message", player));
+								result++;
 							}
 
-							return i;
+							return result;
 						}))
 					)
 		);
